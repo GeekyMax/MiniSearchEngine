@@ -9,9 +9,6 @@ public class StopWords {
     private int wordCount = 0;
     private Set<String> stopWordsSet;
     private static StopWords instance = null;
-    private Set<String> userWordsSet;
-    private List<String> userWordsList;
-    private HashMap<String, Word> wordHashMap;
 
     public static StopWords getInstance() {
         if (instance == null) {
@@ -21,10 +18,7 @@ public class StopWords {
     }
 
     private StopWords() {
-        wordHashMap = new HashMap<>();
         stopWordsSet = new HashSet<String>();
-        userWordsSet = new HashSet<String>();
-        userWordsList = new ArrayList<>();
         //StopWords list from Rainbow
         add("a");
         add("able");
@@ -555,92 +549,14 @@ public class StopWords {
 
     }
 
-    public void read(String fileName) throws Exception {
-        read(new File(fileName));
-    }
-
-    public void read(File file) throws Exception {
-        read(new BufferedReader(new FileReader(file)));
-    }
-
-    public void read(BufferedReader reader) throws Exception {
-        String line;
-//        StringBuffer stringBuffer = new StringBuffer();
-//        clear();
-        int lineId = 1;
-        while ((line = reader.readLine()) != null) {
-            handleStrings(line, lineId);
-            lineId++;
-        }
-//        handleStrings(stringBuffer.toString());
-        reader.close();
-    }
-
-    private void handleStrings(String inputStirng, int lineId) {
-        int position = 1;
-//        System.out.println("handle:input string length: " + inputStirng.length());
-        for (String word : inputStirng.split("[ \\.,:;\\(\\)!\\?]")) {
-            if (word.trim().length() > 0) {
-                String handledWord = word.trim().toLowerCase();
-                if (!stopWordsSet.contains(handledWord)) {
-                    userWordsSet.add(stem(handledWord));
-                    userWordsList.add(stem(handledWord));
-                    position++;
-                    if (wordHashMap.containsKey(handledWord)) {
-                        wordHashMap.get(handledWord).addItem(new ReverseListItem(1, lineId, position));
-                    } else {
-                        Word newWord = new Word(handledWord, wordCount++);
-                        newWord.addItem(new ReverseListItem(1, lineId, position));
-                        wordHashMap.put(handledWord, newWord);
-                    }
-                }
-            }
-        }
-//        System.out.println(userWordsSet.size());
-//        System.out.println(userWordsList.size());
-    }
-
-    public String stem(String input) {
-        englishStemmer stemmer = new englishStemmer();
-        stemmer.setCurrent(input);
-        if (stemmer.stem()) {
-            return stemmer.getCurrent();
-        }
-        return input;
-    }
-
-    public void write(String filename) throws Exception {
-        write(new File(filename));
-    }
-
-    public void write(File file) throws Exception {
-        write(new BufferedWriter(new FileWriter(file)));
-    }
-
-    public void write(BufferedWriter writer) throws Exception {
-        if (userWordsSet.size() != 0) {
-            for (String word : userWordsList) {
-                writer.write(word + ", ");
-            }
-
-        }
-        writer.flush();
-        writer.close();
-    }
-
-    public HashMap<String, Word> getWordsMap() {
-        return wordHashMap;
-    }
-
     private void add(String word) {
-//        System.out.println(word);
         if (word.trim().length() > 0) {
-//            System.out.println("hello");
             stopWordsSet.add(word.trim().toLowerCase());
         }
     }
 
-    private void clear() {
-        stopWordsSet.clear();
+    public boolean isStopWord(String word) {
+        return stopWordsSet.contains(word);
     }
+
 }
